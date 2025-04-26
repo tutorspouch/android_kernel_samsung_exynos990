@@ -34,9 +34,9 @@ https://source.android.com/docs/setup/start/requirements
 
 ```git clone --recurse-submodules https://github.com/Android-Artisan/android_kernel_samsung_exynos990.git```
 
-3. Build for your device without CCache and with KSU-Next
+3. Build for your device without Recovery Kernel and with KSU-Next
 
-```./build.sh -m x1slte -k y -c n```
+```./build.sh -m x1slte -k y -r n```
 
 4. Fetch the flashable zip of the kernel that was just compiled
 
