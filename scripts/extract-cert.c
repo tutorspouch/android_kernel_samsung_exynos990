@@ -21,7 +21,6 @@
 #include <openssl/bio.h>
 #include <openssl/pem.h>
 #include <openssl/err.h>
-#include <openssl/engine.h>
 
 /*
  * OpenSSL 3.0 deprecates the OpenSSL's ENGINE API.
