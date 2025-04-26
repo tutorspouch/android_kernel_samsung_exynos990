@@ -10,15 +10,24 @@
 
 ## Supported devices:
 
-G980F - S20 4G - x1slte
+- G980F - S20 4G - x1slte
 
-G981B - S20 5G - x1s
+- G981B - S20 5G - x1s
 
-G985F - S20+ 4G - y2slte
+- G985F - S20+ 4G - y2slte
 
-G986B - S20+ 5G - y2s
+- G986B - S20+ 5G - y2s
 
-G988B - S20 Ultra (5G) - z3s
+- G988B - S20 Ultra (5G) - z3s
+
+- N980F - Note 20 4G - c1slte
+
+- N981B - Note 20 5G - c1s
+
+- N985F - Note 20 Ultra 4G - c2slte
+
+- N986B - Note 20 Ultra 5G - c2s
+
 
 
 ## Build instructions:
