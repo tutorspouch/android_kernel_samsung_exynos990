@@ -49,7 +49,7 @@ https://source.android.com/docs/setup/start/requirements
 
 4. Fetch the flashable zip of the kernel that was just compiled
 
-```build/out/[your_device]/ArtisanKernel...zip```
+```build/out/[your_device]/ArtisanKRNL...zip```
 
 5. Flash it using a supported recovery like TWRP or PBRP (AOSP recovery does not work)
 
