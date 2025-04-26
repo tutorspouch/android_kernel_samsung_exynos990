@@ -7,7 +7,9 @@
 - HyperOS 2.x support
 - KernelSU Next support
 - Fully open source with a clean commit history
-
+## Issues
+- OTG
+- No susfs
 ## Supported devices:
 
 - G980F - S20 4G - x1slte
