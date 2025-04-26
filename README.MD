@@ -4,6 +4,7 @@
 
 - Linux 4.19.325
 - OneUI 7.x support
+- HyperOS 2.x support
 - Compiled with Neutron Clang 18 + LLVM/LLVM_IAS and arhitecture optimization
 - KernelSU Next support
 - Based on the latest Samsung source for Exynos 990
