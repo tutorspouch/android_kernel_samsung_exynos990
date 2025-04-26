@@ -4,7 +4,7 @@ abort()
 {
     cd -
     echo "-----------------------------------------------"
-    echo "Kernel compilation failed! Exiting..."
+    echo "ArtisanKRNL compilation failed! Exiting..."
     echo "-----------------------------------------------"
     exit -1
 }
@@ -215,13 +215,13 @@ if [ -z "$RECOVERY" ]; then
     DATE=`date +"%d-%m-%Y_%H-%M-%S"`
 
     if [[ "$KSU_OPTION" == "y" ]]; then
-        NAME="$version"_"$MODEL"_UNOFFICIAL_KSU_"$DATE".zip
+        NAME="$version"_"$MODEL"_UNOFFICIAL_KernelSU_NEXT.zip
     else
-        NAME="$version"_"$MODEL"_UNOFFICIAL_"$DATE".zip
+        NAME="$version"_"$MODEL"_UNOFFICIAL.zip
     fi
     zip -r -qq ../"$NAME" .
     popd > /dev/null
 fi
 
 popd > /dev/null
-echo "Build finished successfully!"
+echo "ArtisanKRNL Build finished successfully!"
