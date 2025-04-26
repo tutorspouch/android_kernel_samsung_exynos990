@@ -1,5 +1,7 @@
 # ArtisanKernel for Exynos 990 devices
 
+Based off ExtremeXT's https://github.com/ExtremeXT/990_upstream_v2
+
 ## Features
 
 - Linux 4.19.325
