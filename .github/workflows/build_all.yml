@@ -40,11 +40,14 @@ jobs:
         id: find_zip
         run: |
           ZIP_FILE=$(find build/out/all/ -type f -name "ArtisanKRNL_*.zip" | head -n 1)
-          echo "zip_file=$ZIP_FILE" >> "$GITHUB_ENV"
-          echo "Found zip: $ZIP_FILE"
+          if [[ -z "$ZIP_FILE" ]]; then
+            echo "No ZIP found! Exiting."
+            exit 1
+          fi
+          echo "ZIP_FILE=$ZIP_FILE" >> $GITHUB_ENV
 
       - name: Upload built kernel
         uses: actions/upload-artifact@v4
         with:
           name: built-kernel
-          path: ${{ env.zip_file }}
+          path: ${{ env.ZIP_FILE }}
