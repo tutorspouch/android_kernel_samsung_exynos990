@@ -24,7 +24,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        device: ${{ fromJSON(env.DEVICES) }}
+        device: ${{ split(env.DEVICES, ' ') }}
 
     steps:
       - name: Checkout repository
