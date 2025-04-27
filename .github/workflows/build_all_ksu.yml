@@ -1,0 +1,53 @@
+name: Build Android Kernel for All Devices (Concurrent)
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'arch/arm64/configs/exynos9830_defconfig'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'arch/arm64/configs/exynos9830_defconfig'
+  workflow_dispatch:
+    inputs:
+      force_build:
+        description: 'Force build even if exynos9830_defconfig is not modified (for manual trigger)'
+        type: boolean
+        default: false
+
+env:
+  DEVICES: "x1slte x1s y2slte y2s z3s c1slte c1s c2slte c2s"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        device: ${{ fromJSON(env.DEVICES) }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Set up environment
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libarchive-tools ccache
+
+      - name: Build Kernel for ${{ matrix.device }}
+        run: |
+          ./build.sh -m ${{ matrix.device }} -k y -r n
+
+      - name: Find Flashable Zip
+        id: find_zip
+        run: |
+          echo "ZIP_PATH=$(find build/out/${{ matrix.device }} -name "ArtisanKRNL*.zip")" >> $GITHUB_OUTPUT
+
+      - name: Upload Artifact for ${{ matrix.device }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: kernel-${{ matrix.device }}
+          path: ${{ steps.find_zip.outputs.ZIP_PATH }}
