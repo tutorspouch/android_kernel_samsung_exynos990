@@ -1,4 +1,4 @@
-name: Build Android Kernel for All Devices (Concurrent)
+name: Build Android Kernel (Single Build)
 
 on:
   push:
@@ -16,15 +16,9 @@ on:
         type: boolean
         default: false
 
-env:
-  DEVICES: "x1slte x1s y2slte y2s z3s c1slte c1s c2slte c2s"
-
 jobs:
   build:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        device: [x1slte, x1s, y2slte, y2s, z3s, c1slte, c1s, c2slte, c2s]
 
     steps:
       - name: Checkout repository
@@ -37,19 +31,18 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libarchive-tools ccache
 
-      - name: Build Kernel for ${{ matrix.device }}
+      - name: Build Kernel
         run: |
-          chmod +x ./build.sh
-          ./build.sh -m ${{ matrix.device }} -k y -r n
-
+          chmod +x ./build_all.sh
+          ./build_all.sh
 
       - name: Find Flashable Zip
         id: find_zip
         run: |
-          echo "ZIP_PATH=$(find build/out/${{ matrix.device }} -name "ArtisanKRNL*.zip")" >> $GITHUB_OUTPUT
+          echo "ZIP_PATH=$(find build/out/all/ -type f -name 'ArtisanKRNL_*.zip')" >> $GITHUB_ENV
 
-      - name: Upload Artifact for ${{ matrix.device }}
+      - name: Upload Artifact
         uses: actions/upload-artifact@v3
         with:
-          name: kernel-${{ matrix.device }}
-          path: ${{ steps.find_zip.outputs.ZIP_PATH }}
+          name: kernel-build
+          path: ${{ env.ZIP_PATH }}
