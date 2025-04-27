@@ -38,7 +38,7 @@ jobs:
 
       - name: Find built zip in root directory
         id: find_zip
-         run: |
+         run:|
             ZIP_FILE=$(find / -type f -name "ArtisanKRNL_*.zip" | head -n 1)
             if [[ -z "$ZIP_FILE" ]]; then
              echo "No ZIP found in the root directory! Exiting."
