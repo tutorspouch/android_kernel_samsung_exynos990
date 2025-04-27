@@ -1,4 +1,4 @@
-name: Build Android Kernel
+name: Build Android Kernel (All Devices)
 
 on:
   push:
@@ -21,17 +21,17 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout source
+      - name: Checkout repository
         uses: actions/checkout@v4
         with:
           submodules: recursive
 
-      - name: Install dependencies
+      - name: Set up environment
         run: |
           sudo apt-get update
-          sudo apt-get install -y ccache bc bison flex libssl-dev libelf-dev
+          sudo apt-get install -y libarchive-tools ccache
 
-      - name: Build kernel
+      - name: Build Kernel
         run: |
           chmod +x ./build_all.sh
           ./build_all.sh
@@ -39,7 +39,7 @@ jobs:
       - name: Find built zip
         id: find_zip
         run: |
-          ZIP_FILE=$(find build/out/all/ -type f -name "ArtisanKRNL_*.zip" | head -n 1)
+          ZIP_FILE=$(find build/out/all/zip/ -type f -name "ArtisanKRNL_*.zip" | head -n 1)
           if [[ -z "$ZIP_FILE" ]]; then
             echo "No ZIP found! Exiting."
             exit 1
