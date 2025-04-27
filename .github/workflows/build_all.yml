@@ -39,7 +39,9 @@ jobs:
 
       - name: Build Kernel for ${{ matrix.device }}
         run: |
+          chmod +x ./build.sh
           ./build.sh -m ${{ matrix.device }} -k y -r n
+
 
       - name: Find Flashable Zip
         id: find_zip
