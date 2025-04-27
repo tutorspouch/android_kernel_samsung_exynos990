@@ -2,6 +2,8 @@
 
 Based off ExtremeXT's [990_upstream_v2](https://github.com/ExtremeXT/990_upstream_v2)
 
+And a huge thank you to Xinyan-CMD
+
 ## Features
 
 - Linux 4.19.325
