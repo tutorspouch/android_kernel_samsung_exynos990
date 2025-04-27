@@ -1,125 +1,53 @@
-name: KERNEL BUILDER
+name: Build Android Kernel for All Devices (Concurrent)
 
 on:
   push:
-    branches: [main]
+    branches: [ main ]
+    paths:
+      - 'arch/arm64/configs/exynos9830_defconfig'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'arch/arm64/configs/exynos9830_defconfig'
   workflow_dispatch:
+    inputs:
+      force_build:
+        description: 'Force build even if exynos9830_defconfig is not modified (for manual trigger)'
+        type: boolean
+        default: false
 
 env:
-  REPO_URL: https://github.com/Android-Artisan/android_kernel_samsung_exynos990
-  ARTIFACT_DIR: ${{ github.workspace }}/artifacts
-  FINAL_DIR: ${{ github.workspace }}/final_zips
+  DEVICES: "x1slte x1s y2slte y2s z3s c1slte c1s c2slte c2s"
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    steps:
-      # ===== SETUP =====
-      - name: Clone repository
-        run: |
-          git clone --depth 1 $REPO_URL .
-          git submodule update --init --recursive
+    strategy:
+      matrix:
+        device: [x1slte, x1s, y2slte, y2s, z3s, c1slte, c1s, c2slte, c2s]
 
-      - name: Install dependencies
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Set up environment
         run: |
           sudo apt-get update
-          sudo apt-get install -y \
-            build-essential libncurses5-dev bison flex libssl-dev \
-            libelf-dev bc curl wget git python3 ccache libarchive-tools jq zip
+          sudo apt-get install -y libarchive-tools ccache
 
-      # ===== VERSION INFO =====
-      - name: Get build metadata
-        id: metadata
+      - name: Build Kernel for ${{ matrix.device }}
         run: |
-          VERSION=$(git log -1 --pretty=%s | sed 's/ /-/g')
-          COMMIT_HASH=$(git rev-parse --short HEAD)
-          TIMESTAMP=$(date +%Y%m%d%H%M%S)
-          echo "VERSION=${VERSION}" >> $GITHUB_ENV
-          echo "COMMIT_HASH=${COMMIT_HASH}" >> $GITHUB_ENV
-          echo "TIMESTAMP=${TIMESTAMP}" >> $GITHUB_ENV
+          ./build.sh -m ${{ matrix.device }} -k y -r n
 
-      # ===== BUILD STAGES =====
-      - name: Build Original kernels
+      - name: Find Flashable Zip
+        id: find_zip
         run: |
-          ./build_all.sh -k y -f original
-          mkdir -p ${ARTIFACT_DIR}/Original
-          find build/out -name '*.zip' -exec cp {} ${ARTIFACT_DIR}/Original \;
+          echo "ZIP_PATH=$(find build/out/${{ matrix.device }} -name "ArtisanKRNL*.zip")" >> $GITHUB_OUTPUT
 
-      - name: Build Overclocked kernels
-        run: |
-          ./build_all.sh -k y -f overclocked
-          mkdir -p ${ARTIFACT_DIR}/OC
-          find build/out -name '*.zip' -exec cp {} ${ARTIFACT_DIR}/OC \;
-
-      - name: Build Underclocked kernels
-        run: |
-          ./build_all.sh -k y -f underclocked
-          mkdir -p ${ARTIFACT_DIR}/UC
-          find build/out -name '*.zip' -exec cp {} ${ARTIFACT_DIR}/UC \;
-
-      # ===== PACKAGE ARTIFACTS =====
-      - name: Create final zip packages
-        run: |
-          mkdir -p ${FINAL_DIR}
-          
-          # Zip Original kernels
-          cd ${ARTIFACT_DIR}/Original && \
-          zip -r ${FINAL_DIR}/Original_Kernels_${TIMESTAMP}.zip ./* && \
-          cd -
-          
-          # Zip Overclocked kernels
-          cd ${ARTIFACT_DIR}/OC && \
-          zip -r ${FINAL_DIR}/OC_Kernels_${TIMESTAMP}.zip ./* && \
-          cd -
-          
-          # Zip Underclocked kernels
-          cd ${ARTIFACT_DIR}/UC && \
-          zip -r ${FINAL_DIR}/UC_Kernels_${TIMESTAMP}.zip ./* && \
-          cd -
-          
-          ls -lh ${FINAL_DIR}
-
-      # ===== RELEASE CREATION =====
-      - name: Create GitHub Release
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          RELEASE_JSON=$(curl -s -X POST \
-            -H "Authorization: token $GITHUB_TOKEN" \
-            -H "Content-Type: application/json" \
-            -d '{
-              "tag_name": "v${TIMESTAMP}",
-              "name": "Kernel Build ${VERSION}",
-              "body": "Automated build\nVersion: ${VERSION}\nCommit: ${COMMIT_HASH}",
-              "draft": false,
-              "prerelease": false
-            }' \
-            https://api.github.com/repos/Sexynos990/eyeless_v2/releases)
-
-          RELEASE_ID=$(echo "$RELEASE_JSON" | jq -r '.id')
-          echo "RELEASE_ID=${RELEASE_ID}" >> $GITHUB_ENV
-
-      - name: Upload Release Assets
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          for file in ${FINAL_DIR}/*.zip; do
-            echo "Uploading $file"
-            curl -s -X POST \
-              -H "Authorization: token $GITHUB_TOKEN" \
-              -H "Content-Type: application/zip" \
-              --data-binary @"$file" \
-              "https://uploads.github.com/repos/Android-Artisan/android_kernel_samsung_exynos990/releases/${RELEASE_ID}/assets?name=$(basename "$file")"
-          done
-
-      # ===== FINAL REPORT =====
-      - name: Show build summary
-        run: |
-          echo "=== BUILD COMPLETE ==="
-          echo "Version: ${VERSION}"
-          echo "Commit: ${COMMIT_HASH}"
-          echo "Timestamp: ${TIMESTAMP}"
-          echo "Final packages:"
-          ls -lh ${FINAL_DIR}
-          echo "Release URL:"
-          echo "https://github.com/Android-Artisan/android_kernel_samsung_exynos990/releases/tag/v${TIMESTAMP}"
+      - name: Upload Artifact for ${{ matrix.device }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: kernel-${{ matrix.device }}
+          path: ${{ steps.find_zip.outputs.ZIP_PATH }}
