@@ -1,5 +1,5 @@
 #!/bin/bash
-
+start=$(date +%s)
 abort()
 {
     cd -
@@ -225,3 +225,12 @@ fi
 
 popd > /dev/null
 echo "ArtisanKRNL Build finished successfully!"
+echo "-----------------------------------------------"
+end=$(date +%s)
+runtime=$((end - start))
+
+hours=$((runtime / 3600))
+minutes=$(((runtime % 3600) / 60))
+seconds=$((runtime % 60))
+
+echo "Script executed in $hours hour(s), $minutes minute(s), and $seconds second(s)."
