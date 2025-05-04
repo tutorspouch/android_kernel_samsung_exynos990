@@ -36,7 +36,7 @@ jobs:
           chmod +x ./build_all.sh
           ./build_all.sh
 
-        - name: Find built zips
+      - name: Find built zips
         id: find_zips
          run: |
           ZIP_FILES=$(find . -type f -name "*.zip")
