@@ -38,7 +38,7 @@ jobs:
 
       - name: Find built zips
         id: find_zips
-         run: |
+        run: |
           ZIP_FILES=$(find . -type f -name "*.zip")
           if [[ -z "$ZIP_FILES" ]]; then
           echo "No ZIPs found! Exiting."
