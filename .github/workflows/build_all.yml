@@ -36,18 +36,22 @@ jobs:
           chmod +x ./build_all.sh
           ./build_all.sh
 
-      - name: Find built zip in root directory
-        id: find_zip
-        run: |
-          ZIP_FILE=$(find . -type f -name "*.zip" | head -n 1)
-          if [[ -z "$ZIP_FILE" ]]; then
-            echo "No ZIP found! Exiting."
-            exit 1
+        - name: Find built zips
+        id: find_zips
+         run: |
+          ZIP_FILES=$(find . -type f -name "*.zip")
+          if [[ -z "$ZIP_FILES" ]]; then
+          echo "No ZIPs found! Exiting."
+          exit 1
           fi
-          echo "ZIP_FILE=$ZIP_FILE" >> $GITHUB_ENV
+          echo "ZIP_FILES<<EOF" >> $GITHUB_ENV
+          echo "$ZIP_FILES" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
 
-      - name: Upload built kernel
-        uses: actions/upload-artifact@v4
-        with:
-          name: built-kernel
-          path: ${{ env.ZIP_FILE }}
+
+      - name: Upload built kernels
+  uses: actions/upload-artifact@v4
+  with:
+    name: built-kernels
+    path: |
+      ${{ env.ZIP_FILES }}
