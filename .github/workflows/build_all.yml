@@ -41,17 +41,15 @@ jobs:
         run: |
           ZIP_FILES=$(find . -type f -name "*.zip")
           if [[ -z "$ZIP_FILES" ]]; then
-          echo "No ZIPs found! Exiting."
-          exit 1
+            echo "No ZIPs found! Exiting."
+            exit 1
           fi
           echo "ZIP_FILES<<EOF" >> $GITHUB_ENV
           echo "$ZIP_FILES" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
 
-
       - name: Upload built kernels
-  uses: actions/upload-artifact@v4
-  with:
-    name: built-kernels
-    path: |
-      ${{ env.ZIP_FILES }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: built-kernels
+          path: ${{ env.ZIP_FILES }}
