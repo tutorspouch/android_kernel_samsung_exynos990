@@ -5,10 +5,11 @@ Based off ExtremeXT's [990_upstream_v2](https://github.com/ExtremeXT/990_upstrea
 And a huge thank you to Windblade-Furisode
 
 ## Features
-- Auto Builds in 45-50 minutes for all devices with Github Actions thanks to Xinyan-CMD
+- Auto Builds in 45-50 minutes for all devices with Github Actions thanks to Windblade-Furisode
 - Linux 4.19.325
 - OneUI 7.x support
 - HyperOS 2.x support
+- LineageOS 21.x support
 - KernelSU Next support
 - Fully open source with a clean commit history
 ## Issues
@@ -34,7 +35,7 @@ And a huge thank you to Windblade-Furisode
 
 - N986B - Note 20 Ultra 5G - c2s
 
-
+- G780F - S20 FE (Fans Edition) - r8s
 
 ## Build instructions:
 
