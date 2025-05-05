@@ -27,6 +27,8 @@ And a huge thank you to Windblade-Furisode
 
 - G988B - S20 Ultra (5G) - z3s
 
+- G780F - S20 FE - r8s
+
 - N980F - Note 20 4G - c1slte
 
 - N981B - Note 20 5G - c1s
@@ -34,8 +36,6 @@ And a huge thank you to Windblade-Furisode
 - N985F - Note 20 Ultra 4G - c2slte
 
 - N986B - Note 20 Ultra 5G - c2s
-
-- G780F - S20 FE (Fans Edition) - r8s
 
 ## Build instructions:
 
