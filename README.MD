@@ -2,7 +2,7 @@
 
 Based off ExtremeXT's [990_upstream_v2](https://github.com/ExtremeXT/990_upstream_v2)
 
-And a huge thank you to Xinyan-CMD
+And a huge thank you to Windblade-Furisode
 
 ## Features
 - Auto Builds in 45-50 minutes for all devices with Github Actions thanks to Xinyan-CMD
