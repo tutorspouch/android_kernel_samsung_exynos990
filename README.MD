@@ -42,6 +42,10 @@ And a huge thank you to Windblade-Furisode
 
 - N986B - Note 20 Ultra 5G - c2s
 
+## Build using Google Colab (Might Will Not Work)
+
+- [Start Building](https://colab.research.google.com/github/Android-Artisan/android_kernel_samsung_exynos990/blob/main/Build_ArtisanKRNL.ipynb)
+
 ## Build instructions:
 
 1. Set up build environment as per Google documentation
