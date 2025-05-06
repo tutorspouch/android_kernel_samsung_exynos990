@@ -1,4 +1,4 @@
-# ArtisanKernel for Exynos 990 devices
+# ArtisanKernel v0.0.3 for Exynos 990 devices
 
 Based off ExtremeXT's [990_upstream_v2](https://github.com/ExtremeXT/990_upstream_v2)
 
