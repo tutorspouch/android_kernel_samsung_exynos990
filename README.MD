@@ -4,6 +4,12 @@ Based off ExtremeXT's [990_upstream_v2](https://github.com/ExtremeXT/990_upstrea
 
 And a huge thank you to Windblade-Furisode
 
+## About Kernel
+- Linux 4.19.325
+- Name "People's Front"
+- Display Version "4.19.325-ArtisanKRNL-v0.0.3+"
+
+
 ## Features
 - Auto Builds in 45-50 minutes for all devices with Github Actions thanks to Windblade-Furisode
 - Linux 4.19.325
