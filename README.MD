@@ -12,7 +12,6 @@ And a huge thank you to Windblade-Furisode
 
 ## Features
 - Auto Builds in 45-50 minutes for all devices with Github Actions thanks to Windblade-Furisode
-- Linux 4.19.325
 - OneUI 7.x support
 - HyperOS 2.x support
 - LineageOS 21.x support
