@@ -1,5 +1,5 @@
 # ArtisanKernel v0.0.4 for Exynos 990 devices
-![Build All devices](https://github.com/Android-Artisan/android_kernel_samsung_exynos990/actions/workflows/build_all.yml/badge.svg)
+<a href="https://github.com/Android-Artisan/android_kernel_samsung_exynos990/actions/workflows/build_all.yml"><img loading="lazy" src="https://img.shields.io/github/actions/workflow/status/Android-Artisan/android_kernel_samsung_exynos990/build_all.yml?style=for-the-badge"/></a>
 
 Based off ExtremeXT's [990_upstream_v2](https://github.com/ExtremeXT/990_upstream_v2)
 
