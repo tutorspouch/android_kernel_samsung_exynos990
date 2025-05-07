@@ -1,50 +1,50 @@
 #!/bin/bash
 
-# Set working paths
 SOURCE_DIR="build/out/all/zip"
 UNIVERSAL_DIR="build/universal"
-OUTPUT_DIR="$UNIVERSAL_DIR/output"
-TMP_DIR="tmp_universal"
+OUTPUT_DIR="$(realpath "$UNIVERSAL_DIR/output")"
+TMP_DIR="tmp_universal_all"
 
-# Create only relevant dirs
+# Clean and recreate
 rm -rf "$TMP_DIR"
+mkdir -p "$TMP_DIR/files"
+mkdir -p "$TMP_DIR/META-INF/com/google/android"
 mkdir -p "$OUTPUT_DIR"
 
-# Loop through all device zips
+# Copy required TWRP files
+cp "$UNIVERSAL_DIR/update-binary" "$TMP_DIR/META-INF/com/google/android/" || { echo "❌ Missing update-binary"; exit 1; }
+cp "$UNIVERSAL_DIR/updater-script" "$TMP_DIR/META-INF/com/google/android/" || { echo "❌ Missing updater-script"; exit 1; }
+
+# Process ZIPs
 for zipfile in "$SOURCE_DIR"/*.zip; do
     filename=$(basename "$zipfile")
-    model=$(echo "$filename" | grep -oP '_\K[a-z0-9]+(?=_UNOFFICIAL)')
+    model=$(echo "$filename" | grep -oP '_\K[a-z0-9]+(?=_OFFICIAL)')
 
     echo "Processing: $filename (Model: $model)"
 
-    # Create temp extraction directory
-    mkdir -p "$TMP_DIR/$model"
-    unzip -qq "$zipfile" -d "$TMP_DIR/$model"
+    unzip_dir="tmp_extracted_$model"
+    mkdir -p "$unzip_dir"
 
-    # Rename images if they exist
-    [ -f "$TMP_DIR/$model/files/boot.img" ] && mv "$TMP_DIR/$model/files/boot.img" "$TMP_DIR/$model/files/boot${model}.img"
-    [ -f "$TMP_DIR/$model/files/dtbo.img" ] && mv "$TMP_DIR/$model/files/dtbo.img" "$TMP_DIR/$model/files/dtbo${model}.img"
+    if ! unzip -qq "$zipfile" -d "$unzip_dir"; then
+        echo "❌ Failed to unzip $zipfile"
+        rm -rf "$unzip_dir"
+        continue
+    fi
 
-    # Build universal zip layout
-    mkdir -p "$TMP_DIR/$model_pack/META-INF/com/google/android"
-    mkdir -p "$TMP_DIR/$model_pack/files"
+    [ -f "$unzip_dir/files/boot.img" ] && cp "$unzip_dir/files/boot.img" "$TMP_DIR/files/boot${model}.img"
+    [ -f "$unzip_dir/files/dtbo.img" ] && cp "$unzip_dir/files/dtbo.img" "$TMP_DIR/files/dtbo${model}.img"
 
-    # Copy TWRP flash files
-    cp "$UNIVERSAL_DIR/update-binary" "$TMP_DIR/$model_pack/META-INF/com/google/android/"
-    cp "$UNIVERSAL_DIR/updater-script" "$TMP_DIR/$model_pack/META-INF/com/google/android/"
-
-    # Copy renamed .img files
-    cp "$TMP_DIR/$model/files/"*"$model".img "$TMP_DIR/$model_pack/files/"
-
-    # Build final TWRP-flashable zip
-    pushd "$TMP_DIR/$model_pack" > /dev/null
-    zip -r -qq "$OUTPUT_DIR/universal_${model}.zip" .
-    popd > /dev/null
+    rm -rf "$unzip_dir"
 done
 
-# Clean up temp dir
+# Final ZIP
+pushd "$TMP_DIR" > /dev/null
+zip -r -qq "$OUTPUT_DIR/universal_all_models.zip" . || { echo "❌ Failed to create universal zip"; exit 1; }
+popd > /dev/null
+
 rm -rf "$TMP_DIR"
 
 echo "-----------------------------------------------------"
-echo " Universal TWRP zips created in $OUTPUT_DIR"
+echo " ✅ All-in-one TWRP flashable zip created:"
+echo "     → $OUTPUT_DIR/universal_all_models.zip"
 echo "-----------------------------------------------------"
