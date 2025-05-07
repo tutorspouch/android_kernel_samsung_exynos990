@@ -1,0 +1,78 @@
+ui_print("");
+ui_print("+---------------------------------------------+");
+ui_print("|           Installing ArtisanKernel          |");
+ui_print("|                Version 0.0.4                |");
+ui_print("+---------------------------------------------+");
+ui_print("|  Based on:           ExtremeKRNL            |");
+ui_print("|  Source:     ExtremeXT/990_upstream_v2      |");
+ui_print("+---------------------------------------------+");
+
+ui_print("Detected Bootloader:");
+ui_print(getprop("ro.bootloader"));
+ui_print("+---------------------------------------------+");
+
+if is_substring("G980F", getprop("ro.bootloader")) then
+  ui_print("|       Flashing Kernel for S20 4G            |");
+  package_extract_file("files/bootx1slte.img", "/dev/block/by-name/boot");
+  package_extract_file("files/dtbox1slte.img", "/dev/block/by-name/dtbo");
+endif;
+
+if is_substring("G981B", getprop("ro.bootloader")) then
+  ui_print("|       Flashing Kernel for S20 5G            |");
+  package_extract_file("files/bootx1s.img", "/dev/block/by-name/boot");
+  package_extract_file("files/dtbox1s.img", "/dev/block/by-name/dtbo");
+endif;
+
+if is_substring("G985F", getprop("ro.bootloader")) then
+  ui_print("|      Flashing Kernel for S20+ 4G            |");
+  package_extract_file("files/booty2slte.img", "/dev/block/by-name/boot");
+  package_extract_file("files/dtboy2slte.img", "/dev/block/by-name/dtbo");
+endif;
+
+if is_substring("G986B", getprop("ro.bootloader")) then
+  ui_print("|      Flashing Kernel for S20+ 5G            |");
+  package_extract_file("files/booty2s.img", "/dev/block/by-name/boot");
+  package_extract_file("files/dtboy2s.img", "/dev/block/by-name/dtbo");
+endif;
+
+if is_substring("G988B", getprop("ro.bootloader")) then
+  ui_print("|     Flashing Kernel for S20 Ultra           |");
+  package_extract_file("files/bootz3s.img", "/dev/block/by-name/boot");
+  package_extract_file("files/dtboz3s.img", "/dev/block/by-name/dtbo");
+endif;
+
+if is_substring("G780F", getprop("ro.bootloader")) then
+  ui_print("|      Flashing Kernel for S20 FE             |");
+  package_extract_file("files/bootr8s.img", "/dev/block/by-name/boot");
+  package_extract_file("files/dtbor8s.img", "/dev/block/by-name/dtbo");
+endif;
+
+if is_substring("N980F", getprop("ro.bootloader")) then
+  ui_print("|   Flashing Kernel for Note 20 4G            |");
+  package_extract_file("files/bootc1slte.img", "/dev/block/by-name/boot");
+  package_extract_file("files/dtboc1slte.img", "/dev/block/by-name/dtbo");
+endif;
+
+if is_substring("N981B", getprop("ro.bootloader")) then
+  ui_print("|   Flashing Kernel for Note 20 5G            |");
+  package_extract_file("files/bootc1s.img", "/dev/block/by-name/boot");
+  package_extract_file("files/dtboc1s.img", "/dev/block/by-name/dtbo");
+endif;
+
+if is_substring("N985F", getprop("ro.bootloader")) then
+  ui_print("| Flashing Kernel for Note 20 Ultra 4G        |");
+  package_extract_file("files/bootc2slte.img", "/dev/block/by-name/boot");
+  package_extract_file("files/dtboc2slte.img", "/dev/block/by-name/dtbo");
+endif;
+
+if is_substring("N986B", getprop("ro.bootloader")) then
+  ui_print("| Flashing Kernel for Note 20 Ultra 5G        |");
+  package_extract_file("files/bootc2s.img", "/dev/block/by-name/boot");
+  package_extract_file("files/dtboc2s.img", "/dev/block/by-name/dtbo");
+endif;
+
+ui_print("+---------------------------------------------+");
+ui_print("|         Installation Complete               |");
+ui_print("|       You may now reboot your device        |");
+ui_print("+---------------------------------------------+");
+ui_print(" ");
