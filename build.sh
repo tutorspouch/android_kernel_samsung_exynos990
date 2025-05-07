@@ -215,7 +215,7 @@ if [ -z "$RECOVERY" ]; then
     DATE=`date +"%d-%m-%Y_%H-%M-%S"`
 
     if [[ "$KSU_OPTION" == "y" ]]; then
-        NAME="$version"_"$MODEL"_OFFICIAL_KernelSU_NEXT.zip
+        NAME="$version"_"$MODEL"_UNOFFICIAL_KernelSU_NEXT.zip
     else
         NAME="$version"_"$MODEL"_UNOFFICIAL.zip
     fi
