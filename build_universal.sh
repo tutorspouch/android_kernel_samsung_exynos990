@@ -18,7 +18,7 @@ cp "$UNIVERSAL_DIR/updater-script" "$TMP_DIR/META-INF/com/google/android/" || { 
 # Process ZIPs
 for zipfile in "$SOURCE_DIR"/*.zip; do
     filename=$(basename "$zipfile")
-    model=$(echo "$filename" | grep -oP '_\K[a-z0-9]+(?=_OFFICIAL)')
+    model=$(echo "$filename" | grep -oP '_\K[a-z0-9]+(?=_UNOFFICIAL)')
 
     echo "Processing: $filename (Model: $model)"
 
@@ -46,5 +46,5 @@ rm -rf "$TMP_DIR"
 
 echo "-----------------------------------------------------"
 echo " ✅ All-in-one TWRP flashable zip created:"
-echo "     → $OUTPUT_DIR/universal_all_models.zip"
+echo "     → $OUTPUT_DIR/ArtisanKRNL-v0.0.4_990_OFFICIAL_KernelSU_NEXT.zip"
 echo "-----------------------------------------------------"
