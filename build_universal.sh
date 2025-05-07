@@ -39,7 +39,7 @@ done
 
 # Final ZIP
 pushd "$TMP_DIR" > /dev/null
-zip -r -qq "$OUTPUT_DIR/universal_all_models.zip" . || { echo "❌ Failed to create universal zip"; exit 1; }
+zip -r -qq "$OUTPUT_DIR/ArtisanKRNL-v0.0.4_990_OFFICIAL_KernelSU_NEXT.zip" . || { echo "❌ Failed to create universal zip"; exit 1; }
 popd > /dev/null
 
 rm -rf "$TMP_DIR"
