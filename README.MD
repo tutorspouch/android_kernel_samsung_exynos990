@@ -22,7 +22,7 @@ And a huge thank you to Windblade-Furisode
 ## Issues
 - OTG (Issues with usb_rules)
 
-## Windful (TBA)
+## Windful (To Be Added)
 - LineageOS support (USB ...etc...)
 - SUSFS (is pure hell for Windblade)
 - Pulnice? (Eyeless's governor)
