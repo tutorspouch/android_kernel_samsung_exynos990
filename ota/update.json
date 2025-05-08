@@ -1,0 +1,45 @@
+{
+  "version": "v0.0.4",
+  "devices": {
+    "x1slte": {
+      "boot_url": "https://yourcdn.com/x1slte/bootx1slte.img",
+      "dtbo_url": "https://yourcdn.com/x1slte/dtbox1slte.img"
+    },
+    "x1s": {
+      "boot_url": "https://yourcdn.com/x1s/boot-v0.0.4.img",
+      "dtbo_url": "https://yourcdn.com/x1s/dtbo-v0.0.4.img"
+    },
+    "y2slte": {
+      "boot_url": "https://yourcdn.com/y2slte/boot-v0.0.4.img",
+      "dtbo_url": "https://yourcdn.com/y2slte/dtbo-v0.0.4.img"
+    },
+    "y2s": {
+      "boot_url": "https://yourcdn.com/y2s/boot-v0.0.4.img",
+      "dtbo_url": "https://yourcdn.com/y2s/dtbo-v0.0.4.img"
+    },
+    "z3s": {
+      "boot_url": "https://yourcdn.com/z3s/boot-v0.0.4.img",
+      "dtbo_url": "https://yourcdn.com/z3s/dtbo-v0.0.4.img"
+    },
+    "c1slte": {
+      "boot_url": "https://yourcdn.com/c1slte/boot-v0.0.4.img",
+      "dtbo_url": "https://yourcdn.com/c1slte/dtbo-v0.0.4.img"
+    },
+    "c1s": {
+      "boot_url": "https://yourcdn.com/c1s/boot-v0.0.4.img",
+      "dtbo_url": "https://yourcdn.com/c1s/dtbo-v0.0.4.img"
+    },
+    "c2slte": {
+      "boot_url": "https://yourcdn.com/c2slte/boot-v0.0.4.img",
+      "dtbo_url": "https://yourcdn.com/c2slte/dtbo-v0.0.4.img"
+    },
+    "c2s": {
+      "boot_url": "https://yourcdn.com/c2s/boot-v0.0.4.img",
+      "dtbo_url": "https://yourcdn.com/c2s/dtbo-v0.0.4.img"
+    },
+    "r8s": {
+      "boot_url": "https://yourcdn.com/r8s/boot-v0.0.4.img",
+      "dtbo_url": "https://yourcdn.com/r8s/dtbo-v0.0.4.img"
+    }
+  }
+}
