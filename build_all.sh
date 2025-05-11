@@ -18,9 +18,9 @@ start=$(date +%s)
 # Get additional build flags from command line arguments
 BUILD_FLAGS="$@"
 
-# List of devices to build (Others removed for Testing)
-# DEVICES=("x1slte" "x1s" "y2slte" "y2s" "z3s" "c1slte" "c1s" "c2slte" "c2s" "r8s")
-DEVICES=("x1s")
+# List of devices to build
+DEVICES=("x1slte" "x1s" "y2slte" "y2s" "z3s" "c1slte" "c1s" "c2slte" "c2s" "r8s")
+# DEVICES=("x1s")
 
 rm -rf build/out/all/
 
