@@ -63,18 +63,14 @@ https://source.android.com/docs/setup/start/requirements
 * The `libarchive-tools` package is also necessary to patch the toolchain.
 * The `ccache` package is necessary if you wish to build with CCache (Quicker subsequest builds)
 
-2. Properly clone repository with submodules (KernelSU-Next and toolchains)
+2. Copy this script into any x86-64 Linux Distro
 
-```git clone --recurse-submodules https://github.com/Android-Artisan/android_kernel_samsung_exynos990.git```
+```bash
+curl -fsSL -o kernelify.sh https://raw.githubusercontent.com/Android-Artisan/android_kernel_samsung_exynos990/refs/heads/main/kernelify.sh
+```
 
-3. Build for your device without Recovery Kernel and with KSU-Next
+3. Once the script is Downloaded, run
 
-```./build.sh -m x1slte -k y -r n```
-
-4. Fetch the flashable zip of the kernel that was just compiled
-
-```build/out/[your_device]/ArtisanKRNL...zip```
-
-5. Flash it using a supported recovery like TWRP or PBRP (AOSP recovery does not work)
-
-6. Enjoy!
+```bash
+bash kernelify.sh
+```
