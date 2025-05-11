@@ -17,13 +17,19 @@ cat << "EOF"
 
 EOF
 
+# Function: Check for existing repo or clone it
+prepare_repo() {
+    echo "[*] Searching for existing 'android_kernel_samsung_exynos990' folder..."
+    REPO_PATH=$(find / -type d -name "android_kernel_samsung_exynos990" 2>/dev/null | head -n 1)
 
-# Clone the repository
-clone_repo() {
-    echo ""
-    echo "[*] Cloning the kernel source repository..."
-    git clone --recurse-submodules https://github.com/Android-Artisan/android_kernel_samsung_exynos990.git
-    cd android_kernel_samsung_exynos990
+    if [ -n "$REPO_PATH" ]; then
+        echo "[*] Found existing repository at: $REPO_PATH"
+        cd "$REPO_PATH"
+    else
+        echo "[*] Repository not found. Cloning from GitHub..."
+        git clone --recurse-submodules https://github.com/Android-Artisan/android_kernel_samsung_exynos990.git
+        cd android_kernel_samsung_exynos990
+    fi
 }
 
 # Function: Prompt for single device build
@@ -56,7 +62,7 @@ build_all() {
 }
 
 ### Main Script ###
-clone_repo
+prepare_repo
 
 echo ""
 echo "Choose build mode:"
