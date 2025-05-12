@@ -135,4 +135,5 @@ all.config
 # Toolchain and Build Folders
 /toolchain
 /build/out
+/build/universal
 /out
