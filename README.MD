@@ -16,15 +16,15 @@ And a huge thank you to Windblade-Furisode
 - Auto Builds in 45-50 minutes for all devices with Github Actions thanks to Windblade-Furisode
 - OneUI 7.x support
 - HyperOS 2.x support
-
 - KernelSU Next support
+- SUSFS support (Kingslayer9988)
 - Fully open source with a clean commit history
+
 ## Issues
 - OTG (Issues with usb_rules)
 
 ## Windful (To Be Added)
 - LineageOS support (USB ...etc...)
-- SUSFS (is pure hell for Windblade)
 - Pulnice? (Eyeless's governor)
 - Gpu overclocking (front & back end)
 
