@@ -131,3 +131,8 @@ all.config
 
 # Kdevelop4
 *.kdev4
+
+# Toolchain and Build Folders
+/toolchain
+/build/out
+/out
