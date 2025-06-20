@@ -749,6 +749,4 @@ void inode_set_bytes(struct inode *inode, loff_t bytes)
 	inode->i_bytes = bytes & 511;
 }
 
-EXPORT_SYMBOL(inode_set_bytes);#if defined(CONFIG_KSU) && defined(CONFIG_COMPAT) && defined(CONFIG_KSU_MANUAL_HOOK)
-	ksu_handle_stat(&dfd, &filename, &flag); /* 32-bit su */
-#endif
+EXPORT_SYMBOL(inode_set_bytes);
