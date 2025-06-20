@@ -236,4 +236,5 @@ obj-$(CONFIG_SPU_VERIFY) += spu_verify/
 # The Makefile in it will decide what fixups we need.
 obj-y				+= extremerom/
 
+
 obj-$(CONFIG_KSU) += kernelsu/
