@@ -171,12 +171,35 @@ echo "-----------------------------------------------"
 make ${MAKE_ARGS} -j$CORES || abort
 
 # KPM Injection (always done when KSU is enabled)
+#!/bin/bash
+
+# ... [keeping all the earlier parts of the script] ...
+
+# KPM Injection (always done when KSU is enabled)
 if [[ "$KSU_OPTION" == "y" && -z "$DTBS" ]]; then
     echo "-----------------------------------------------"
     echo "Performing KPM Injection..."
     echo "-----------------------------------------------"
     
     mkdir -p ~/SukiSUPatch
+    
+    # Fix: Check if Image exists and copy it correctly
+    if [ -f "out/arch/arm64/boot/Image" ]; then
+        cp out/arch/arm64/boot/Image ~/SukiSUPatch/Image
+    else
+        echo "Error: Kernel Image not found at out/arch/arm64/boot/Image"
+        echo "Checking alternative locations..."
+        
+        # Check for gzipped image
+        if [ -f "out/arch/arm64/boot/Image.gz" ]; then
+            echo "Found Image.gz, extracting..."
+            gunzip -c out/arch/arm64/boot/Image.gz > ~/SukiSUPatch/Image
+        else
+            echo "No kernel image found. KPM Injection cannot continue."
+            abort
+        fi
+    fi
+    
     cd ~/SukiSUPatch
     
     TAG=$(curl -s https://api.github.com/repos/SukiSU-Ultra/SukiSU_KernelPatch_patch/releases | \
@@ -186,21 +209,38 @@ if [[ "$KSU_OPTION" == "y" && -z "$DTBS" ]]; then
     curl -Ls -o patch_linux "https://github.com/SukiSU-Ultra/SukiSU_KernelPatch_patch/releases/download/$TAG/patch_linux"
     chmod +x patch_linux
     
-    cp out/arch/arm64/boot/Image ~/SukiSUPatch/Image
-    rm -rf out/arch/arm64/boot/Image.gz
+    # Make sure Image exists before proceeding
+    if [ ! -f "Image" ]; then
+        echo "Error: Image file not found for patching"
+        cd - > /dev/null
+        rm -rf ~/SukiSUPatch
+        abort
+    fi
+    
+    rm -rf out/arch/arm64/boot/Image.gz 2>/dev/null
     
     ./patch_linux
     
-    rm -rf ./Image
-    mv -f oImage Image
-    gzip -k Image
-    mv ~/SukiSUPatch/Image.gz out/arch/arm64/boot/Image.gz
-    mv ~/SukiSUPatch/Image out/arch/arm64/boot/Image
+    # Only proceed with file operations if patch was successful
+    if [ -f "oImage" ]; then
+        rm -rf ./Image
+        mv -f oImage Image
+        gzip -k Image
+        
+        # Make sure the destination directory exists
+        mkdir -p "$(dirname "$(readlink -f "$OLDPWD/out/arch/arm64/boot/Image.gz")")"
+        
+        mv ~/SukiSUPatch/Image.gz "$OLDPWD/out/arch/arm64/boot/Image.gz"
+        mv ~/SukiSUPatch/Image "$OLDPWD/out/arch/arm64/boot/Image"
+        
+        echo "KPM Injection completed successfully"
+    else
+        echo "Error: KPM patch did not produce output file"
+    fi
     
     cd - > /dev/null
     rm -rf ~/SukiSUPatch
     
-    echo "KPM Injection completed successfully"
     echo "-----------------------------------------------"
 fi
 
