@@ -15,7 +15,7 @@ unset_flags()
 Usage: $(basename "$0") [options]
 Options:
     -m, --model [value]    Specify the model code of the phone
-    -k, --ksu [y/N]        Include KernelSU
+    -k, --ksu [y/N]        Include KernelSU with KernelPatch Module
     -r, --recovery [y/N]   Compile kernel for an Android Recovery
     -d, --dtbs [y/N]	   Compile only DTBs
 EOF
@@ -121,7 +121,7 @@ if [[ "$RECOVERY_OPTION" == "y" ]]; then
 fi
 
 if [ -z $KSU_OPTION ]; then
-    read -p "Include KernelSU (y/N): " KSU_OPTION
+    read -p "Include KernelSU with KPM (y/N): " KSU_OPTION
 fi
 
 if [[ "$KSU_OPTION" == "y" ]]; then
@@ -129,7 +129,7 @@ if [[ "$KSU_OPTION" == "y" ]]; then
 fi
 
 if [[ "$DTB_OPTION" == "y" ]]; then
-	DTBS=y
+    DTBS=y
 fi
 
 rm -rf build/out/$MODEL
@@ -140,9 +140,9 @@ mkdir -p build/out/$MODEL/zip/META-INF/com/google/android
 echo "-----------------------------------------------"
 echo "Defconfig: "$KERNEL_DEFCONFIG""
 if [ -z "$KSU" ]; then
-    echo "KSU: N"
+    echo "KSU with KPM: N"
 else
-    echo "KSU: $KSU"
+    echo "KSU with KPM: Y"
 fi
 if [ -z "$RECOVERY" ]; then
     echo "Recovery: N"
@@ -169,6 +169,40 @@ fi
 
 echo "-----------------------------------------------"
 make ${MAKE_ARGS} -j$CORES || abort
+
+# KPM Injection (always done when KSU is enabled)
+if [[ "$KSU_OPTION" == "y" && -z "$DTBS" ]]; then
+    echo "-----------------------------------------------"
+    echo "Performing KPM Injection..."
+    echo "-----------------------------------------------"
+    
+    mkdir -p ~/SukiSUPatch
+    cd ~/SukiSUPatch
+    
+    TAG=$(curl -s https://api.github.com/repos/SukiSU-Ultra/SukiSU_KernelPatch_patch/releases | \
+        jq -r 'map(select(.prerelease)) | first | .tag_name')
+    echo "Latest KPM patch tag is: $TAG"
+    
+    curl -Ls -o patch_linux "https://github.com/SukiSU-Ultra/SukiSU_KernelPatch_patch/releases/download/$TAG/patch_linux"
+    chmod +x patch_linux
+    
+    cp out/arch/arm64/boot/Image ~/SukiSUPatch/Image
+    rm -rf out/arch/arm64/boot/Image.gz
+    
+    ./patch_linux
+    
+    rm -rf ./Image
+    mv -f oImage Image
+    gzip -k Image
+    mv ~/SukiSUPatch/Image.gz out/arch/arm64/boot/Image.gz
+    mv ~/SukiSUPatch/Image out/arch/arm64/boot/Image
+    
+    cd - > /dev/null
+    rm -rf ~/SukiSUPatch
+    
+    echo "KPM Injection completed successfully"
+    echo "-----------------------------------------------"
+fi
 
 # Define constant variables
 DTB_PATH=build/out/$MODEL/dtb.img
@@ -236,7 +270,7 @@ if [ -z "$RECOVERY" ] && [ -z "$DTBS" ]; then
     DATE=`date +"%d-%m-%Y_%H-%M-%S"`
 
     if [[ "$KSU_OPTION" == "y" ]]; then
-        NAME="$version"_"$MODEL"_UNOFFICIAL_KSU_"$DATE".zip
+        NAME="$version"_"$MODEL"_UNOFFICIAL_KSU_KPM_"$DATE".zip
     else
         NAME="$version"_"$MODEL"_UNOFFICIAL_"$DATE".zip
     fi
