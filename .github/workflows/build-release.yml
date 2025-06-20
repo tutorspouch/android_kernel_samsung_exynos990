@@ -6,14 +6,11 @@ env:
 on:
   workflow_dispatch:
     inputs:
-      ksu:
-        description: 'Include KernelSU with KPM'
-        required: true
-        default: 'y'
-        type: choice
-        options:
-          - 'y'
-          - 'n'
+      force_build:
+        description: 'Force build even if exynos9830_defconfig is not modified (manual trigger)'
+        type: boolean
+        default: false
+
   
   # Optional: Schedule weekly builds
   schedule:
