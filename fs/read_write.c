@@ -447,11 +447,6 @@ ssize_t vfs_read(struct file *file, char __user *buf, size_t count, loff_t *pos)
 {
 	ssize_t ret;
 
-#if defined(CONFIG_KSU) && defined(CONFIG_KSU_MANUAL_HOOK)
-	if (unlikely(ksu_vfs_read_hook)) 
-		ksu_handle_sys_read(fd, &buf, &count);
-#endif
-
 	if (!(file->f_mode & FMODE_READ))
 		return -EBADF;
 	if (!(file->f_mode & FMODE_CAN_READ))
@@ -606,6 +601,10 @@ ssize_t ksys_read(unsigned int fd, char __user *buf, size_t count)
 
 SYSCALL_DEFINE3(read, unsigned int, fd, char __user *, buf, size_t, count)
 {
+#if defined(CONFIG_KSU) && defined(CONFIG_KSU_MANUAL_HOOK)
+	if (unlikely(ksu_vfs_read_hook)) 
+		ksu_handle_sys_read(fd, &buf, &count);
+#endif
 	return ksys_read(fd, buf, count);
 }
 

@@ -171,24 +171,20 @@ echo "-----------------------------------------------"
 make ${MAKE_ARGS} -j$CORES || abort
 
 # KPM Injection (always done when KSU is enabled)
-#!/bin/bash
 
-# ... [keeping all the earlier parts of the script] ...
-
-# KPM Injection (always done when KSU is enabled)
 if [[ "$KSU_OPTION" == "y" && -z "$DTBS" ]]; then
     echo "-----------------------------------------------"
     echo "Performing KPM Injection..."
     echo "-----------------------------------------------"
     
-    mkdir -p ~/SukiSUPatch
+    mkdir -p build/out/$MODEL/SukiSUPatch
     
     # Fix: Check if Image exists and copy it correctly
     if [ -f "out/arch/arm64/boot/Image" ]; then
-        cp out/arch/arm64/boot/Image ~/SukiSUPatch/Image
+        cp out/arch/arm64/boot/Image build/out/$MODEL/SukiSUPatch/Image
     else
         echo "Error: Kernel Image not found at out/arch/arm64/boot/Image"
-        echo "Checking alternative locations..."
+        echo "Checking for gzipped file..."
         
         # Check for gzipped image
         if [ -f "out/arch/arm64/boot/Image.gz" ]; then
@@ -200,7 +196,7 @@ if [[ "$KSU_OPTION" == "y" && -z "$DTBS" ]]; then
         fi
     fi
     
-    cd ~/SukiSUPatch
+    cd build/out/$MODEL/SukiSUPatch/
     
     TAG=$(curl -s https://api.github.com/repos/SukiSU-Ultra/SukiSU_KernelPatch_patch/releases | \
         jq -r 'map(select(.prerelease)) | first | .tag_name')
@@ -213,7 +209,7 @@ if [[ "$KSU_OPTION" == "y" && -z "$DTBS" ]]; then
     if [ ! -f "Image" ]; then
         echo "Error: Image file not found for patching"
         cd - > /dev/null
-        rm -rf ~/SukiSUPatch
+        rm -rf build/out/$MODEL/SukiSUPatch/
         abort
     fi
     
@@ -230,8 +226,8 @@ if [[ "$KSU_OPTION" == "y" && -z "$DTBS" ]]; then
         # Make sure the destination directory exists
         mkdir -p "$(dirname "$(readlink -f "$OLDPWD/out/arch/arm64/boot/Image.gz")")"
         
-        mv ~/SukiSUPatch/Image.gz "$OLDPWD/out/arch/arm64/boot/Image.gz"
-        mv ~/SukiSUPatch/Image "$OLDPWD/out/arch/arm64/boot/Image"
+        cp build/out/$MODEL/SukiSUPatch/Image.gz "$OLDPWD/out/arch/arm64/boot/Image.gz"
+        cp build/out/$MODEL/SukiSUPatch/Image "$OLDPWD/out/arch/arm64/boot/Image"
         
         echo "KPM Injection completed successfully"
     else
@@ -239,10 +235,11 @@ if [[ "$KSU_OPTION" == "y" && -z "$DTBS" ]]; then
     fi
     
     cd - > /dev/null
-    rm -rf ~/SukiSUPatch
     
     echo "-----------------------------------------------"
 fi
+
+## Build auxiliary boot.img files
 
 # Define constant variables
 DTB_PATH=build/out/$MODEL/dtb.img
@@ -262,7 +259,6 @@ PAGESIZE=2048
 RAMDISK=build/out/$MODEL/ramdisk.cpio.gz
 OUTPUT_FILE=build/out/$MODEL/boot.img
 
-## Build auxiliary boot.img files
 # Copy kernel to build
 if [ -z "$DTBS" ]; then
     cp out/arch/arm64/boot/Image build/out/$MODEL
