@@ -1,0 +1,337 @@
+name: "Build Exynos990 Kernel"
+
+env:
+  OUT_DIR: "${{ github.workspace }}/out"
+
+on:
+  workflow_dispatch:
+    inputs:
+      device:
+        description: 'Device model'
+        required: true
+        default: 'y2s'
+        type: choice
+        options:
+          - 'x1slte'
+          - 'x1s'
+          - 'y2slte'
+          - 'y2s'
+          - 'z3s'
+          - 'c1slte'
+          - 'c1s'
+          - 'c2slte'
+          - 'c2s'
+          - 'r8s'
+      ksu:
+        description: 'Include KernelSU with KPM'
+        required: true
+        default: 'y'
+        type: choice
+        options:
+          - 'y'
+          - 'n'
+      recovery:
+        description: 'Build for recovery'
+        required: false
+        default: 'n'
+        type: choice
+        options:
+          - 'y'
+          - 'n'
+      dtbs:
+        description: 'Build only DTBs'
+        required: false
+        default: 'n'
+        type: choice
+        options:
+          - 'y'
+          - 'n'
+
+jobs:
+  build-kernel:
+    name: "🔨 Build Exynos990 Kernel"
+    runs-on: ubuntu-latest
+    steps:
+      - name: "⏱️ Set build date"
+        id: date
+        run: echo "date=$(date +'%Y%m%d')" >> $GITHUB_OUTPUT
+
+      - name: "⭐ Install prerequisites"
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential bc gcc-aarch64-linux-gnu gcc-arm-linux-gnueabi libssl-dev libfl-dev
+          sudo apt-get install -y curl git ftp lftp wget libarchive-tools ccache 
+          sudo apt-get install -y zip unzip tar gzip bzip2 cpio jq
+
+      - name: "📥 Checkout repository"
+        uses: actions/checkout@v3
+        with:
+          repository: Kingslayer9988/android_kernel_samsung_exynos990
+          ref: SukiSU-Ultra
+          submodules: recursive
+          fetch-depth: 1
+
+      - name: "🛠️ Setup build directories"
+        run: |
+          mkdir -p build/out/${{ github.event.inputs.device }}
+          mkdir -p build/out/${{ github.event.inputs.device }}/zip/files
+          mkdir -p build/out/${{ github.event.inputs.device }}/zip/META-INF/com/google/android
+          mkdir -p toolchain
+
+      - name: "🔧 Download toolchain"
+        run: |
+          mkdir -p toolchain/clang_14
+          cd toolchain/clang_14
+          curl -LJOk https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/tags/android-13.0.0_r13/clang-r450784d.tar.gz
+          tar xf android-13.0.0_r13-clang-r450784d.tar.gz
+          rm android-13.0.0_r13-clang-r450784d.tar.gz
+
+      - name: "⚙️ Download mkdtimg tools"
+        run: |
+          # Download mkdtimg tool
+          mkdir -p toolchain
+          curl -Lo toolchain/mkdtimg https://android.googlesource.com/platform/system/libufdt/+/refs/heads/master/utils/src/mkdtimg?format=TEXT | base64 -d
+          chmod +x toolchain/mkdtimg
+          
+          # Download mkbootimg tool
+          curl -Lo toolchain/mkbootimg https://android.googlesource.com/platform/system/tools/mkbootimg/+/refs/heads/master/mkbootimg.py?format=TEXT | base64 -d
+          chmod +x toolchain/mkbootimg
+
+      - name: "📂 Create build configs"
+        run: |
+          # Create dtconfigs directory
+          mkdir -p build/dtconfigs
+          
+          # Create ramdisk directory if not a recovery or dtb-only build
+          if [ "${{ github.event.inputs.recovery }}" != "y" ] && [ "${{ github.event.inputs.dtbs }}" != "y" ]; then
+            mkdir -p build/ramdisk
+          fi
+          
+          # Create basic updater files for the zip
+          echo '#!/sbin/sh' > build/update-binary
+          echo '# Dummy update-binary - replaced by actual script during build' >> build/update-binary
+          chmod +x build/update-binary
+          
+          echo '# Dummy updater-script - replaced by actual script during build' > build/updater-script
+
+      - name: "🧠 Create device config files"
+        run: |
+          # Create exynos9830.cfg
+          cat > build/dtconfigs/exynos9830.cfg << 'EOF'
+          exynos9830-universal9830.dtb
+            id=0x00000000
+            rev=0x0
+          EOF
+          
+          # Create device-specific .cfg file
+          cat > build/dtconfigs/${{ github.event.inputs.device }}.cfg << 'EOF'
+          exynos9830-${{ github.event.inputs.device }}_eur_open_00.dtbo
+            id=0x00000000
+            rev=0x0
+          EOF
+
+      - name: "🔄 Build kernel"
+        run: |
+          PATH="$PWD/toolchain/clang_14/bin:$PATH"
+          
+          # Define build parameters
+          MODEL="${{ github.event.inputs.device }}"
+          KSU_OPTION="${{ github.event.inputs.ksu }}"
+          RECOVERY_OPTION="${{ github.event.inputs.recovery }}"
+          DTB_OPTION="${{ github.event.inputs.dtbs }}"
+          
+          # Define board code based on model
+          case $MODEL in
+          x1slte)
+              BOARD=SRPSJ28B018KU
+          ;;
+          x1s)
+              BOARD=SRPSI19A018KU
+          ;;
+          y2slte)
+              BOARD=SRPSJ28A018KU
+          ;;
+          y2s)
+              BOARD=SRPSG12A018KU
+          ;;
+          z3s)
+              BOARD=SRPSI19B018KU
+          ;;
+          c1slte)
+              BOARD=SRPTC30B009KU
+          ;;
+          c1s)
+              BOARD=SRPTB27D009KU
+          ;;
+          c2slte)
+              BOARD=SRPTC30A009KU
+          ;;
+          c2s)
+              BOARD=SRPTB27C009KU
+          ;;
+          r8s)
+              BOARD=SRPTF26B014KU
+          ;;
+          esac
+          
+          # Set kernel config
+          KERNEL_DEFCONFIG=exynos9830_defconfig
+          
+          # Set additional configs for recovery and KSU
+          if [[ "$RECOVERY_OPTION" == "y" ]]; then
+            RECOVERY=recovery.config
+            KSU_OPTION=n
+          fi
+          
+          if [[ "$KSU_OPTION" == "y" ]]; then
+            KSU=ksu.config
+          fi
+          
+          # Build the kernel
+          MAKE_ARGS="LLVM=1 LLVM_IAS=1 ARCH=arm64 O=out"
+          
+          # Generate configuration
+          make ${MAKE_ARGS} -j$(nproc) $KERNEL_DEFCONFIG $MODEL.config $KSU $RECOVERY
+          
+          # Build kernel or DTBs
+          if [ "$DTB_OPTION" == "y" ]; then
+            make ${MAKE_ARGS} -j$(nproc) dtbs
+          else
+            make ${MAKE_ARGS} -j$(nproc)
+          fi
+          
+          # KPM Injection (if KSU is enabled)
+          if [[ "$KSU_OPTION" == "y" && "$DTB_OPTION" != "y" ]]; then
+            echo "Performing KPM Injection..."
+            
+            mkdir -p build/out/$MODEL/SukiSUPatch
+            
+            # Copy kernel image
+            if [ -f "out/arch/arm64/boot/Image" ]; then
+              cp out/arch/arm64/boot/Image build/out/$MODEL/SukiSUPatch/Image
+            elif [ -f "out/arch/arm64/boot/Image.gz" ]; then
+              gunzip -c out/arch/arm64/boot/Image.gz > build/out/$MODEL/SukiSUPatch/Image
+            fi
+            
+            cd build/out/$MODEL/SukiSUPatch/
+            
+            # Get latest KPM patch tag
+            TAG=$(curl -s https://api.github.com/repos/SukiSU-Ultra/SukiSU_KernelPatch_patch/releases | \
+                jq -r 'map(select(.prerelease)) | first | .tag_name')
+            echo "Latest KPM patch tag is: $TAG"
+            
+            # Download and apply patch
+            curl -Ls -o patch_linux "https://github.com/SukiSU-Ultra/SukiSU_KernelPatch_patch/releases/download/$TAG/patch_linux"
+            chmod +x patch_linux
+            
+            ./patch_linux
+            
+            # Apply patched kernel
+            if [ -f "oImage" ]; then
+              rm -rf ./Image
+              mv -f oImage Image
+              gzip -k Image
+              
+              # Copy back to output directory
+              cp Image.gz "$OLDPWD/out/arch/arm64/boot/Image.gz"
+              cp Image "$OLDPWD/out/arch/arm64/boot/Image"
+            fi
+            
+            cd - > /dev/null
+          fi
+          
+          # Build DTB files
+          echo "Building common exynos9830 Device Tree Blob Image..."
+          ./toolchain/mkdtimg cfg_create build/out/$MODEL/dtb.img build/dtconfigs/exynos9830.cfg -d out/arch/arm64/boot/dts/exynos
+          
+          echo "Building Device Tree Blob Output Image for $MODEL..."
+          ./toolchain/mkdtimg cfg_create build/out/$MODEL/dtbo.img build/dtconfigs/$MODEL.cfg -d out/arch/arm64/boot/dts/samsung
+          
+          # Only proceed with ramdisk/boot image if not DTB-only build
+          if [ -z "$RECOVERY" ] && [ -z "$DTB_OPTION" ]; then
+            # Build ramdisk
+            echo "Building RAMDisk..."
+            cd build/ramdisk
+            find . ! -name . | LC_ALL=C sort | cpio -o -H newc -R root:root | gzip > ../out/$MODEL/ramdisk.cpio.gz
+            cd - > /dev/null
+            
+            # Copy kernel image to build directory
+            cp out/arch/arm64/boot/Image build/out/$MODEL
+            
+            # Create boot image
+            echo "Creating boot image..."
+            DTB_PATH=build/out/$MODEL/dtb.img
+            KERNEL_PATH=build/out/$MODEL/Image
+            RAMDISK=build/out/$MODEL/ramdisk.cpio.gz
+            OUTPUT_FILE=build/out/$MODEL/boot.img
+            
+            ./toolchain/mkbootimg --base 0x10000000 --board $BOARD --cmdline "androidboot.hardware=exynos990 loop.max_part=7" \
+              --dtb $DTB_PATH --dtb_offset 0x00000000 --hashtype sha1 --header_version 2 --kernel $KERNEL_PATH \
+              --kernel_offset 0x00008000 --os_patch_level 2025-03 --os_version 15.0.0 --pagesize 2048 \
+              --ramdisk $RAMDISK --ramdisk_offset 0x01000000 \
+              --second_offset 0xF0000000 --tags_offset 0x00000100 -o $OUTPUT_FILE
+            
+            # Build zip
+            echo "Building zip..."
+            cp build/out/$MODEL/boot.img build/out/$MODEL/zip/files/boot.img
+            cp build/out/$MODEL/dtbo.img build/out/$MODEL/zip/files/dtbo.img
+            cp build/update-binary build/out/$MODEL/zip/META-INF/com/google/android/update-binary
+            cp build/updater-script build/out/$MODEL/zip/META-INF/com/google/android/updater-script
+            
+            version=$(grep -o 'CONFIG_LOCALVERSION="[^"]*"' arch/arm64/configs/exynos9830_defconfig | cut -d '"' -f 2)
+            version=${version:1}
+            DATE=$(date +"%d-%m-%Y_%H-%M-%S")
+            
+            if [[ "$KSU_OPTION" == "y" ]]; then
+              NAME="$version"_"$MODEL"_UNOFFICIAL_KSU_KPM_"$DATE".zip
+            else
+              NAME="$version"_"$MODEL"_UNOFFICIAL_"$DATE".zip
+            fi
+            
+            cd build/out/$MODEL/zip
+            zip -r -qq ../"$NAME" .
+            cd -
+          fi
+
+      - name: "📤 Upload kernel zip"
+        if: ${{ github.event.inputs.dtbs != 'y' && github.event.inputs.recovery != 'y' }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: exynos990-${{ github.event.inputs.device }}-${{ steps.date.outputs.date }}
+          path: build/out/${{ github.event.inputs.device }}/*.zip
+
+      - name: "📤 Upload DTBs"
+        uses: actions/upload-artifact@v3
+        with:
+          name: exynos990-${{ github.event.inputs.device }}-dtbs-${{ steps.date.outputs.date }}
+          path: |
+            build/out/${{ github.event.inputs.device }}/dtb.img
+            build/out/${{ github.event.inputs.device }}/dtbo.img
+
+      - name: "🚀 Create GitHub Release"
+        if: ${{ github.event.inputs.dtbs != 'y' && github.event.inputs.recovery != 'y' }}
+        uses: softprops/action-gh-release@v2.1.0
+        with:
+          tag_name: v${{ steps.date.outputs.date }}-${{ github.event.inputs.device }}
+          name: SukiSU-Ultra Kernel for ${{ github.event.inputs.device }} (${{ steps.date.outputs.date }})
+          make_latest: true
+          prerelease: false
+          draft: false
+          generate_release_notes: false
+          body: |
+            # SukiSU-Ultra Kernel for Samsung Exynos 990
+            
+            Device: ${{ github.event.inputs.device }}
+            Built with: ${{ github.event.inputs.ksu == 'y' && 'KernelSU + KPM' || 'No Root' }}
+            Date: ${{ steps.date.outputs.date }}
+            
+            ## Installation:
+            1. Flash the kernel using TWRP or other custom recovery
+            2. Download and install the SukiSU-Ultra Manager
+               [![Stable Version](https://img.shields.io/github/v/release/SukiSU-Ultra/SukiSU-Ultra?label=Release&logo=github)](https://github.com/SukiSU-Ultra/SukiSU-Ultra/releases/latest)
+            
+            ## Notes:
+            - Please make sure you're flashing the correct version for your device
+            - For best results, perform a clean install
+          files: |
+            build/out/${{ github.event.inputs.device }}/*.zip
