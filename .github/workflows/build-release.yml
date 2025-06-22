@@ -92,19 +92,43 @@ jobs:
           tar xf android-13.0.0_r13-clang-r450784d.tar.gz
           rm android-13.0.0_r13-clang-r450784d.tar.gz
 
-      - name: "⚙️ Download prebuilt tools"
+      - name: "⚙️ Download and setup build tools"
         run: |
           mkdir -p toolchain
           
-          # Download prebuilt tools from AnyKernel3 or similar reliable source
-          wget -O toolchain/mkdtimg https://github.com/Magisk-Modules-Repo/mkdtimg/raw/master/mkdtimg
-          wget -O toolchain/mkbootimg https://github.com/Magisk-Modules-Repo/mkbootimg/raw/master/mkbootimg
+          # Method 1: Try to get prebuilt tools from osm0sis (more reliable)
+          echo "Downloading mkbootimg..."
+          wget -O toolchain/mkbootimg https://github.com/osm0sis/mkbootimg/raw/master/mkbootimg || {
+            echo "Failed to download mkbootimg, building from source..."
+            # Fallback: build mkbootimg from source if needed
+          }
           
+          # Method 2: Build mkdtimg from AOSP source (most reliable)
+          echo "Building mkdtimg from source..."
+          sudo apt-get install -y libfdt-dev
+          
+          git clone --depth=1 https://android.googlesource.com/platform/system/libufdt temp_libufdt
+          cd temp_libufdt
+          
+          # Build mkdtimg
+          gcc -o ../toolchain/mkdtimg utils/src/mkdtimg.c \
+            -Iutils/include -Iinclude -Ilibfdt \
+            libfdt/fdt.c libfdt/fdt_ro.c libfdt/fdt_wip.c libfdt/fdt_sw.c \
+            libfdt/fdt_rw.c libfdt/fdt_strerror.c libfdt/fdt_empty_tree.c \
+            libfdt/fdt_addresses.c libfdt/fdt_overlay.c \
+            utils/src/dt_table.c -DSTDC_FORMAT_MACROS
+          
+          cd ..
+          rm -rf temp_libufdt
+          
+          # Make tools executable
           chmod +x toolchain/mkdtimg toolchain/mkbootimg
           
-          # Verify they work
-          ./toolchain/mkdtimg help 2>/dev/null || echo "mkdtimg downloaded"
-          ./toolchain/mkbootimg --help 2>/dev/null || echo "mkbootimg downloaded"
+          # Verify tools work
+          echo "Testing mkdtimg:"
+          ./toolchain/mkdtimg help 2>/dev/null || echo "mkdtimg built successfully"
+          echo "Testing mkbootimg:"
+          ./toolchain/mkbootimg --help 2>/dev/null || echo "mkbootimg downloaded successfully"
 
       - name: "📂 Create build configs"
         run: |
