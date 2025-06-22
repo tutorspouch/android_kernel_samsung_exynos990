@@ -48,7 +48,9 @@ done
 
 echo "Preparing the build environment..."
 
+# Add this near the top of your script, after the pushd command
 pushd $(dirname "$0") > /dev/null
+KERNEL_ROOT=$(pwd)  # Add this line
 CORES=`cat /proc/cpuinfo | grep -c processor`
 
 # Define toolchain variables
@@ -204,7 +206,7 @@ if [[ "$KSU_OPTION" == "y" && -z "$DTBS" ]]; then
         mv oImage Image
         gzip -k Image
         
-        # Fix: Copy back to kernel output directory using relative paths
+        # Fix: Copy back to kernel output directory using correct paths
         cp Image.gz "$KERNEL_ROOT/out/arch/arm64/boot/Image.gz"
         cp Image "$KERNEL_ROOT/out/arch/arm64/boot/Image"
         
