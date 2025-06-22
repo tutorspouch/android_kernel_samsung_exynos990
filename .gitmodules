@@ -1,4 +1,4 @@
 [submodule "SukiSU-Ultra"]
 	path = KernelSU
-	url = https://github.com/Kingslayer9988/SukiSU-Ultra.git
-	branch = exynos990v2
+	url = https://github.com/SukiSU-Ultra/SukiSU-Ultra.git
+	branch = susfs-main
