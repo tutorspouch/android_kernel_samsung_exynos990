@@ -51,7 +51,7 @@ jobs:
           sudo apt-get install -y zip unzip tar gzip bzip2 cpio jq
 
       - name: "📥 Checkout repository"
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: Kingslayer9988/android_kernel_samsung_exynos990
           ref: SukiSU-Ultra
@@ -343,13 +343,13 @@ jobs:
           cd -
 
       - name: "📤 Upload kernel zip"
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: SukiSU-Ultra-${{ matrix.device }}-${{ steps.date.outputs.date }}
           path: build/out/${{ matrix.device }}/*.zip
 
       - name: "📤 Upload DTBs"
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: SukiSU-Ultra-${{ matrix.device }}-dtbs-${{ steps.date.outputs.date }}
           path: |
