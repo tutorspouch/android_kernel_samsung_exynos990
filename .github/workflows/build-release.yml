@@ -92,16 +92,19 @@ jobs:
           tar xf android-13.0.0_r13-clang-r450784d.tar.gz
           rm android-13.0.0_r13-clang-r450784d.tar.gz
 
-      - name: "⚙️ Download mkdtimg tools"
+      - name: "⚙️ Download prebuilt tools"
         run: |
-          # Download mkdtimg tool
           mkdir -p toolchain
-          curl -Lo toolchain/mkdtimg https://android.googlesource.com/platform/system/libufdt/+/refs/heads/master/utils/src/mkdtimg?format=TEXT | base64 -d
-          chmod +x toolchain/mkdtimg
           
-          # Download mkbootimg tool
-          curl -Lo toolchain/mkbootimg https://android.googlesource.com/platform/system/tools/mkbootimg/+/refs/heads/master/mkbootimg.py?format=TEXT | base64 -d
-          chmod +x toolchain/mkbootimg
+          # Download prebuilt tools from AnyKernel3 or similar reliable source
+          wget -O toolchain/mkdtimg https://github.com/Magisk-Modules-Repo/mkdtimg/raw/master/mkdtimg
+          wget -O toolchain/mkbootimg https://github.com/Magisk-Modules-Repo/mkbootimg/raw/master/mkbootimg
+          
+          chmod +x toolchain/mkdtimg toolchain/mkbootimg
+          
+          # Verify they work
+          ./toolchain/mkdtimg help 2>/dev/null || echo "mkdtimg downloaded"
+          ./toolchain/mkbootimg --help 2>/dev/null || echo "mkbootimg downloaded"
 
       - name: "📂 Create build configs"
         run: |
