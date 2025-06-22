@@ -6,14 +6,11 @@ env:
 on:
   workflow_dispatch:
     inputs:
-      ksu:
-        description: 'Include KernelSU with KPM'
-        required: true
-        default: 'y'
-        type: choice
-        options:
-          - 'y'
-          - 'n'
+      force_build:
+        description: 'Force build even if exynos9830_defconfig is not modified (manual trigger)'
+        type: boolean
+        default: false
+
   
   # Optional: Schedule weekly builds
   schedule:
@@ -57,6 +54,25 @@ jobs:
           ref: SukiSU-Ultra
           submodules: recursive
           fetch-depth: 1
+      
+      - name: "😋 Integrate SukiSU-Ultra"
+        run: |
+          # Remove existing KernelSU/SukiSU if it exists
+          if [ -d "./KernelSU" ]; then
+            rm -rf "./KernelSU"
+          fi
+          if [ -d "./drivers/kernelsu" ]; then
+            rm -rf "./drivers/kernelsu"
+          fi
+          
+          # Download and run the SukiSU setup script
+          curl -LSs "https://raw.githubusercontent.com/SukiSU-Ultra/SukiSU-Ultra/main/kernel/setup.sh" | bash -s susfs-main
+          
+          # Display version information
+          if [ -d "KernelSU" ]; then
+            ROOT_VERSION=$(git -C KernelSU describe --abbrev=0 --tags 2>/dev/null || echo "unknown")
+            echo "SukiSU-Ultra version: $ROOT_VERSION"
+          fi
 
       - name: "🛠️ Setup build directories"
         run: |
@@ -170,7 +186,11 @@ jobs:
           
           # Generate configuration
           echo "Generating config for $MODEL with KSU=$KSU_OPTION"
-          make ${MAKE_ARGS} -j$(nproc) $KERNEL_DEFCONFIG $MODEL.config $KSU
+          if [[ "$KSU_OPTION" == "y" ]]; then
+            make LLVM=1 LLVM_IAS=1 ARCH=arm64 O=out -j$(nproc) $KERNEL_DEFCONFIG $MODEL.config ksu.config
+          else
+            make LLVM=1 LLVM_IAS=1 ARCH=arm64 O=out -j$(nproc) $KERNEL_DEFCONFIG $MODEL.config
+          fi
           
           # Build kernel
           echo "Building kernel..."
@@ -320,13 +340,13 @@ jobs:
           cd -
 
       - name: "📤 Upload kernel zip"
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v3
         with:
           name: SukiSU-Ultra-${{ matrix.device }}-${{ steps.date.outputs.date }}
           path: build/out/${{ matrix.device }}/*.zip
 
       - name: "📤 Upload DTBs"
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v3
         with:
           name: SukiSU-Ultra-${{ matrix.device }}-dtbs-${{ steps.date.outputs.date }}
           path: |
