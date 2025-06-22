@@ -343,7 +343,7 @@ jobs:
           cd -
 
       - name: "📤 Upload kernel zip"
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: SukiSU-Ultra-${{ matrix.device }}-${{ steps.date.outputs.date }}
           path: build/out/${{ matrix.device }}/*.zip
