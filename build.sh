@@ -180,22 +180,7 @@ if [[ "$KSU_OPTION" == "y" && -z "$DTBS" ]]; then
     mkdir -p build/out/$MODEL/SukiSUPatch
     
     # Fix: Check if Image exists and copy it correctly
-    if [ -f "out/arch/arm64/boot/Image" ]; then
-        cp out/arch/arm64/boot/Image build/out/$MODEL/SukiSUPatch/Image
-    else
-        echo "Error: Kernel Image not found at out/arch/arm64/boot/Image"
-        echo "Checking for gzipped file..."
-        
-        # Check for gzipped image
-        if [ -f "out/arch/arm64/boot/Image.gz" ]; then
-            echo "Found Image.gz, extracting..."
-            gunzip -c out/arch/arm64/boot/Image.gz > ~/SukiSUPatch/Image
-        else
-            echo "No kernel image found. KPM Injection cannot continue."
-            abort
-        fi
-    fi
-    
+    cp out/arch/arm64/boot/Image build/out/$MODEL/SukiSUPatch/Image
     cd build/out/$MODEL/SukiSUPatch/
     
     TAG=$(curl -s https://api.github.com/repos/SukiSU-Ultra/SukiSU_KernelPatch_patch/releases | \
@@ -204,16 +189,6 @@ if [[ "$KSU_OPTION" == "y" && -z "$DTBS" ]]; then
     
     curl -Ls -o patch_linux "https://github.com/SukiSU-Ultra/SukiSU_KernelPatch_patch/releases/download/$TAG/patch_linux"
     chmod +x patch_linux
-    
-    # Make sure Image exists before proceeding
-    if [ ! -f "Image" ]; then
-        echo "Error: Image file not found for patching"
-        cd - > /dev/null
-        rm -rf build/out/$MODEL/SukiSUPatch/
-        abort
-    fi
-    
-    rm -rf out/arch/arm64/boot/Image.gz 2>/dev/null
     
     ./patch_linux
     
@@ -224,10 +199,10 @@ if [[ "$KSU_OPTION" == "y" && -z "$DTBS" ]]; then
         gzip -k Image
         
         # Make sure the destination directory exists
-        mkdir -p "$(dirname "$(readlink -f "$OLDPWD/out/arch/arm64/boot/Image.gz")")"
+        mkdir -p "$(dirname "$(readlink -f "/home/kingslayer/host/github/990_upstream_v2/out/arch/arm64/boot/Image.gz")")"
         
-        cp build/out/$MODEL/SukiSUPatch/Image.gz "$OLDPWD/out/arch/arm64/boot/Image.gz"
-        cp build/out/$MODEL/SukiSUPatch/Image "$OLDPWD/out/arch/arm64/boot/Image"
+        cp build/out/$MODEL/Image.gz "/home/kingslayer/host/github/990_upstream_v2/out/arch/arm64/boot/Image.gz"
+        cp build/out/$MODEL/Image "/home/kingslayer/host/github/990_upstream_v2/out/arch/arm64/boot/Image"
         
         echo "KPM Injection completed successfully"
     else
