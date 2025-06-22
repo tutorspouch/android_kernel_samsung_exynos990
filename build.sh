@@ -171,7 +171,6 @@ echo "-----------------------------------------------"
 make ${MAKE_ARGS} -j$CORES || abort
 
 # KPM Injection (always done when KSU is enabled)
-
 if [[ "$KSU_OPTION" == "y" && -z "$DTBS" ]]; then
     echo "-----------------------------------------------"
     echo "Performing KPM Injection..."
@@ -180,8 +179,15 @@ if [[ "$KSU_OPTION" == "y" && -z "$DTBS" ]]; then
     mkdir -p build/out/$MODEL/SukiSUPatch
     
     # Fix: Check if Image exists and copy it correctly
-    cp out/arch/arm64/boot/Image build/out/$MODEL/SukiSUPatch/Image
-    cd build/out/$MODEL/SukiSUPatch/
+    if [ -f "out/arch/arm64/boot/Image" ]; then
+        cp out/arch/arm64/boot/Image build/out/$MODEL/SukiSUPatch/Image
+    else
+        echo "Error: Kernel Image not found!"
+        exit 1
+    fi
+    
+    # Change to patch directory
+    pushd build/out/$MODEL/SukiSUPatch/ > /dev/null
     
     TAG=$(curl -s https://api.github.com/repos/SukiSU-Ultra/SukiSU_KernelPatch_patch/releases | \
         jq -r 'map(select(.prerelease)) | first | .tag_name')
@@ -194,23 +200,22 @@ if [[ "$KSU_OPTION" == "y" && -z "$DTBS" ]]; then
     
     # Only proceed with file operations if patch was successful
     if [ -f "oImage" ]; then
-        rm -rf ./Image
-        mv -f oImage Image
+        rm -f ./Image
+        mv oImage Image
         gzip -k Image
         
-        # Make sure the destination directory exists
-        mkdir -p "$(dirname "$(readlink -f "/home/kingslayer/host/github/990_upstream_v2/out/arch/arm64/boot/Image.gz")")"
-        
-        cp build/out/$MODEL/Image.gz "/home/kingslayer/host/github/990_upstream_v2/out/arch/arm64/boot/Image.gz"
-        cp build/out/$MODEL/Image "/home/kingslayer/host/github/990_upstream_v2/out/arch/arm64/boot/Image"
+        # Fix: Copy back to kernel output directory using relative paths
+        cp Image.gz "$KERNEL_ROOT/out/arch/arm64/boot/Image.gz"
+        cp Image "$KERNEL_ROOT/out/arch/arm64/boot/Image"
         
         echo "KPM Injection completed successfully"
     else
         echo "Error: KPM patch did not produce output file"
+        popd > /dev/null
+        exit 1
     fi
     
-    cd - > /dev/null
-    
+    popd > /dev/null
     echo "-----------------------------------------------"
 fi
 
