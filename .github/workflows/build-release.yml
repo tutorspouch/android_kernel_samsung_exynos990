@@ -54,6 +54,25 @@ jobs:
           ref: SukiSU-Ultra
           submodules: recursive
           fetch-depth: 1
+      
+      - name: "😋 Integrate SukiSU-Ultra"
+        run: |
+          # Remove existing KernelSU/SukiSU if it exists
+          if [ -d "./KernelSU" ]; then
+            rm -rf "./KernelSU"
+          fi
+          if [ -d "./drivers/kernelsu" ]; then
+            rm -rf "./drivers/kernelsu"
+          fi
+          
+          # Download and run the SukiSU setup script
+          curl -LSs "https://raw.githubusercontent.com/SukiSU-Ultra/SukiSU-Ultra/main/kernel/setup.sh" | bash -s susfs-main
+          
+          # Display version information
+          if [ -d "KernelSU" ]; then
+            ROOT_VERSION=$(git -C KernelSU describe --abbrev=0 --tags 2>/dev/null || echo "unknown")
+            echo "SukiSU-Ultra version: $ROOT_VERSION"
+          fi
 
       - name: "🛠️ Setup build directories"
         run: |
@@ -167,7 +186,11 @@ jobs:
           
           # Generate configuration
           echo "Generating config for $MODEL with KSU=$KSU_OPTION"
-          make ${MAKE_ARGS} -j$(nproc) $KERNEL_DEFCONFIG $MODEL.config $KSU
+          if [[ "$KSU_OPTION" == "y" ]]; then
+            make LLVM=1 LLVM_IAS=1 ARCH=arm64 O=out -j$(nproc) $KERNEL_DEFCONFIG $MODEL.config ksu.config
+          else
+            make LLVM=1 LLVM_IAS=1 ARCH=arm64 O=out -j$(nproc) $KERNEL_DEFCONFIG $MODEL.config
+          fi
           
           # Build kernel
           echo "Building kernel..."
