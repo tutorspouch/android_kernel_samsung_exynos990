@@ -96,14 +96,7 @@ jobs:
         run: |
           mkdir -p toolchain
           
-          # Method 1: Try to get prebuilt tools from osm0sis (more reliable)
-          echo "Downloading mkbootimg..."
-          wget -O toolchain/mkbootimg https://github.com/osm0sis/mkbootimg/raw/master/mkbootimg || {
-            echo "Failed to download mkbootimg, building from source..."
-            # Fallback: build mkbootimg from source if needed
-          }
-          
-          # Method 2: Build mkdtimg from AOSP source (most reliable)
+          # Build mkdtimg from AOSP source (most reliable)
           echo "Building mkdtimg from source..."
           sudo apt-get install -y libfdt-dev
           
@@ -121,6 +114,17 @@ jobs:
           cd ..
           rm -rf temp_libufdt
           
+          # Try multiple sources for mkbootimg
+          echo "Downloading mkbootimg..."
+          wget -O toolchain/mkbootimg https://github.com/osm0sis/mkbootimg/raw/master/mkbootimg || \
+          wget -O toolchain/mkbootimg https://raw.githubusercontent.com/xiaolu/mkbootimg_tools/master/mkbootimg || \
+          {
+            echo "Failed to download mkbootimg, using python version..."
+            wget -O toolchain/mkbootimg.py https://android.googlesource.com/platform/system/tools/mkbootimg/+/refs/heads/master/mkbootimg.py?format=TEXT
+            base64 -d toolchain/mkbootimg.py > toolchain/mkbootimg
+            rm toolchain/mkbootimg.py
+          }
+          
           # Make tools executable
           chmod +x toolchain/mkdtimg toolchain/mkbootimg
           
@@ -128,7 +132,7 @@ jobs:
           echo "Testing mkdtimg:"
           ./toolchain/mkdtimg help 2>/dev/null || echo "mkdtimg built successfully"
           echo "Testing mkbootimg:"
-          ./toolchain/mkbootimg --help 2>/dev/null || echo "mkbootimg downloaded successfully"
+          ./toolchain/mkbootimg --help 2>/dev/null || echo "mkbootimg ready"
 
       - name: "📂 Create build configs"
         run: |
@@ -268,10 +272,16 @@ jobs:
           
           # Build DTB files
           echo "Building common exynos9830 Device Tree Blob Image..."
-          ./toolchain/mkdtimg cfg_create build/out/$MODEL/dtb.img build/dtconfigs/exynos9830.cfg -d out/arch/arm64/boot/dts/exynos
+          if ! ./toolchain/mkdtimg cfg_create build/out/$MODEL/dtb.img build/dtconfigs/exynos9830.cfg -d out/arch/arm64/boot/dts/exynos; then
+            echo "Failed to create dtb.img"
+            exit 1
+          fi
           
           echo "Building Device Tree Blob Output Image for $MODEL..."
-          ./toolchain/mkdtimg cfg_create build/out/$MODEL/dtbo.img build/dtconfigs/$MODEL.cfg -d out/arch/arm64/boot/dts/samsung
+          if ! ./toolchain/mkdtimg cfg_create build/out/$MODEL/dtbo.img build/dtconfigs/$MODEL.cfg -d out/arch/arm64/boot/dts/samsung; then
+            echo "Failed to create dtbo.img"
+            exit 1
+          fi
           
           # Build ramdisk
           echo "Building RAMDisk..."
