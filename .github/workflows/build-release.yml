@@ -27,16 +27,16 @@ jobs:
       fail-fast: false
       matrix:
         device: 
-          - 'x1slte'
-          - 'x1s'
-          - 'y2slte'
-          - 'y2s'
+          #- 'x1slte'
+          #- 'x1s'
+          #- 'y2slte'
+          #- 'y2s'
           - 'z3s'
-          - 'c1slte'
-          - 'c1s'
-          - 'c2slte'
-          - 'c2s'
-          - 'r8s'
+          #- 'c1slte'
+          #- 'c1s'
+          #- 'c2slte'
+          #- 'c2s'
+          #- 'r8s'
 
     steps:
       - name: "⏱️ Set build date"
